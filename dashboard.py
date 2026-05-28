@@ -376,11 +376,11 @@ def main() -> None:
 		}
             .hero-logo {
               display: block;
-              width: min(1200px, 98%);
-              max-height: 320px;
+              width: min(900px, 95%);
+              max-height: 220px;
               object-fit: contain;
               margin: 0 auto;
-              filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.5));
+              filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.45));
             }
             .brand-subtitle {
               font-size: 0.78rem;
