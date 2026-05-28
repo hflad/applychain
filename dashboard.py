@@ -152,29 +152,6 @@ def render_stats(df: pd.DataFrame) -> None:
     c3.metric("Avg Match Score", f"{avg_match:.1f}")
     c4.metric("Days Since Last Application", "N/A" if last_applied_days is None else str(last_applied_days))
 
-    with st.expander("Metric Debug Details"):
-        st.write("Metric logic: submitted rows = status in applied/interviewing/rejected/offer + non-empty company/role; deduplicated by application_id when present, else company|role.")
-        st.write(f"Raw dataframe rows: {diagnostics['raw_rows']}")
-        st.write(f"Submitted candidate rows before dedupe: {diagnostics['submitted_candidate_rows']}")
-        st.write(f"Total applied after dedupe (displayed metric): {diagnostics['deduplicated_submitted_rows']}")
-        st.write(f"Rows excluded due to non-submitted statuses: {diagnostics['excluded_status_rows']}")
-        st.write(f"Duplicate full rows detected: {diagnostics['duplicate_full_rows']}")
-        st.write(f"Duplicate application keys detected: {diagnostics['duplicate_application_keys']}")
-        st.write(f"Unique company+role pairs: {diagnostics['unique_company_role_pairs']}")
-        st.write("Status counts:", diagnostics["status_counts"])
-        if diagnostics["malformed_statuses"]:
-            st.warning(f"Malformed/unknown statuses detected: {', '.join(diagnostics['malformed_statuses'])}")
-        if diagnostics["deduplicated_submitted_rows"] > diagnostics["unique_company_role_pairs"]:
-            st.warning("Submitted count exceeds unique company+role pairs; possible multiple applications/retries exist.")
-        if diagnostics["duplicate_application_keys"] > 0:
-            st.warning("Duplicate application keys detected; deduplication applied in metrics.")
-        st.write("Rows contributing to Total Applied (deduplicated submitted set):")
-        st.dataframe(
-            metrics_df[["date", "company", "role", "status", "match_score", "application_key"]].sort_values("date", ascending=False),
-            use_container_width=True,
-        )
-
-
 def render_pipeline(df: pd.DataFrame) -> None:
     st.subheader("Pipeline")
     cols = st.columns(len(STATUSES))
