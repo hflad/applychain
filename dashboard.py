@@ -31,11 +31,30 @@ def parse_workspace_arg() -> Optional[Path]:
 
 
 def resolve_workspace() -> Path:
-    script_dir = Path(__file__).resolve().parent
+    """
+    Resolve workspace robustly for both:
+    - streamlit run app.py
+    - nested src/dashboard/app.py structures
+    """
+
     override = parse_workspace_arg()
-    if override:
+    if override and override.exists():
         return override
-    return script_dir.parent
+
+    current = Path(__file__).resolve().parent
+
+    # Walk upward looking for repo markers
+    for candidate in [current] + list(current.parents):
+
+        has_assets = (candidate / "assets").exists()
+        has_logs = (candidate / "logs").exists()
+        has_git = (candidate / ".git").exists()
+
+        if has_assets or has_logs or has_git:
+            return candidate
+
+    # Fallback
+    return current
 
 
 @st.cache_data(ttl=2)
@@ -479,13 +498,27 @@ def main() -> None:
     workspace_root = resolve_workspace()
     csv_path = workspace_root / "logs" / "applications_log.csv"
     logo_candidates = [
-        workspace_root / "assets" / "applychain_logo.png",
-        workspace_root / "assets" / "applychain-logo.png",
-        workspace_root / "assets" / "logo.png",
-        workspace_root / "applychain_logo.png",
-        workspace_root / "logo.png",
-    ]
-    logo_path = next((p for p in logo_candidates if p.exists()), None)
+    workspace_root / "assets" / "applychain_logo.png",
+    workspace_root / "assets" / "applychain-logo.png",
+    workspace_root / "assets" / "logo.png",
+    workspace_root / "applychain_logo.png",
+    workspace_root / "logo.png",
+]
+
+logo_path = None
+
+for candidate in logo_candidates:
+    try:
+        if candidate.exists() and candidate.is_file():
+            logo_path = candidate.resolve()
+            break
+    except Exception:
+        pass
+
+if logo_path is not None:
+    st.image(str(logo_path), width=560)
+else:
+    st.warning(f"Logo not found. Checked: {[str(p) for p in logo_candidates]}")
 
     st.markdown(
         f"""
