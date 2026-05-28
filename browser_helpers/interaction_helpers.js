@@ -1,17 +1,31 @@
 /**
  * interaction_helpers.js
  * DOM-aware browser interaction helpers for ATS automation
- * Last updated: 2026-05-28
+ * Last updated: 2026-05-29
  *
- * USAGE: Inject via mcp__Claude_in_Chrome__javascript_tool when native interactions fail.
- * These are FALLBACK helpers — always try native Chrome MCP interactions first.
- * Only escalate to these when standard click/type/form_input fails visibly.
+ * ══════════════════════════════════════════════════════════════
+ * PRIME DIRECTIVE — READ THIS FIRST
+ * ══════════════════════════════════════════════════════════════
+ * Act like a human. Use these helpers ONLY when human-style
+ * interaction has visibly failed (wrong value shown on screen,
+ * field still empty, dropdown still closed).
+ *
+ * ALWAYS try first:
+ *   1. find() → form_input / computer left_click / computer type
+ *   2. scroll_to element → click → type
+ *   3. Take a screenshot and verify the result visually
+ *
+ * ONLY fall back to JS helpers when the page doesn't respond to
+ * direct interaction (e.g. React state not updating, Select2
+ * autocomplete fields, ARIA-only components).
  *
  * Tier order:
- *   1. Native Chrome MCP (click, type, form_input)
+ *   1. Native Chrome MCP (find, form_input, left_click, type)   ← ALWAYS FIRST
  *   2. Label-aware click (clickRadioByLabel, clickButtonByText)
  *   3. Focus-and-retry (focusAndType)
  *   4. DOM-aware React helpers (setReactInputValue, selectDropdownOption)
+ *   5. Select2 autocomplete helper (fillSelect2Field)           ← last resort for autocomplete
+ * ══════════════════════════════════════════════════════════════
  */
 
 // ─────────────────────────────────────────────────────────────
@@ -261,6 +275,133 @@ function findEmptyRequiredFields() {
   return empty;
 }
 
+// ─────────────────────────────────────────────────────────────
+// "ADD ANOTHER" BUTTON DETECTION AND CLICKING
+// ─────────────────────────────────────────────────────────────
+
+/**
+ * Find all "Add Another" / "Add More" buttons on the current page.
+ * Returns a list of {text, element} objects so the caller can decide
+ * which section to expand.
+ * @returns {{ text: string, el: Element }[]}
+ */
+function findAddAnotherButtons() {
+  const keywords = ['add another', 'add more', 'add a', '+ add', 'add entry', 'add education', 'add experience', 'add work'];
+  const candidates = [...document.querySelectorAll(
+    'button, [role="button"], a, input[type="button"], input[type="submit"], span[tabindex]'
+  )];
+  return candidates
+    .filter(el => {
+      const txt = (el.innerText || el.value || '').trim().toLowerCase();
+      return keywords.some(k => txt.includes(k));
+    })
+    .map(el => ({ text: (el.innerText || el.value || '').trim(), el }));
+}
+
+/**
+ * Click an "Add Another" button for a specific section.
+ * @param {string} sectionHint - Partial keyword like "education", "experience", "work"
+ * @returns {boolean} true if button found and clicked
+ */
+function clickAddAnother(sectionHint) {
+  const buttons = findAddAnotherButtons();
+  if (buttons.length === 0) return false;
+
+  // If hint given, prefer matching button
+  if (sectionHint) {
+    const match = buttons.find(b =>
+      b.text.toLowerCase().includes(sectionHint.toLowerCase())
+    );
+    if (match) { match.el.click(); return true; }
+  }
+
+  // Fall back to first available
+  buttons[0].el.click();
+  return true;
+}
+
+/**
+ * Count how many entry rows currently exist in a repeating section.
+ * Useful for verifying that "Add Another" created a new row.
+ * @param {string} sectionHint - CSS class fragment or label text to scope the count
+ * @returns {number}
+ */
+function countSectionRows(sectionHint) {
+  // Try common patterns: fieldset groups, repeated container divs
+  const patterns = [
+    `[class*="${sectionHint}"]`,
+    `[id*="${sectionHint}"]`,
+    `[data-section*="${sectionHint}"]`
+  ];
+  for (const pattern of patterns) {
+    try {
+      const els = document.querySelectorAll(pattern);
+      if (els.length > 0) return els.length;
+    } catch {}
+  }
+  return -1; // unknown
+}
+
+/**
+ * Scan the page for ALL "Add Another" style buttons and return a
+ * plain-text summary. Use this at the start of each form section
+ * to avoid missing expandable rows.
+ * @returns {string}
+ */
+function auditAddAnotherButtons() {
+  const found = findAddAnotherButtons();
+  if (found.length === 0) return 'No "Add Another" buttons found on this page.';
+  return 'Found ' + found.length + ' Add Another button(s): ' +
+    found.map(b => '"' + b.text + '"').join(', ');
+}
+
+// ─────────────────────────────────────────────────────────────
+// SELECT2 AUTOCOMPLETE HELPER (last resort — Taleo and similar)
+// ─────────────────────────────────────────────────────────────
+
+/**
+ * Fill a Select2 autocomplete field by container class suffix.
+ * Only use this when clicking directly on the field and typing
+ * does not open the autocomplete dropdown.
+ *
+ * How to find containerId:
+ *   document.querySelectorAll('[role="combobox"]') → look at className
+ *   for "select2Container{id}" → id is the containerId
+ *
+ * @param {string} containerId - e.g. "6074-1-sample" from class "select2Container6074-1-sample"
+ * @param {string} searchText  - text to search for (e.g. "Miami University")
+ * @returns {boolean} true if option was selected
+ */
+function fillSelect2Field(containerId, searchText) {
+  // 1. Open the dropdown
+  const span = document.querySelector(`.select2Container${containerId}`);
+  if (!span) return false;
+  span.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window }));
+
+  // 2. Type into the search box
+  const searchInput = document.querySelector('.select2-search__field');
+  if (!searchInput) return false;
+  searchInput.focus();
+  searchInput.value = searchText;
+  searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+  searchInput.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true, key: 'a' }));
+
+  // 3. Click the first matching option (synchronous — Taleo list loads immediately)
+  const option = document.querySelector('.select2-results__option');
+  if (!option) return false;
+  option.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true, view: window }));
+  option.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, isPrimary: true, view: window }));
+  option.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, button: 0, buttons: 1, view: window }));
+  option.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, isPrimary: true, view: window }));
+  option.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, button: 0, view: window }));
+  option.dispatchEvent(new MouseEvent('click', { bubbles: true, button: 0, view: window }));
+
+  // 4. Verify
+  const rendered = document.querySelector(`#select2-${containerId}-container`);
+  const selected = rendered ? rendered.textContent.replace('×', '').trim() : '';
+  return selected.toLowerCase().includes(searchText.toLowerCase());
+}
+
 // Export for reference in console
 if (typeof module !== 'undefined') {
   module.exports = {
@@ -273,5 +414,10 @@ if (typeof module !== 'undefined') {
     verifyDropdownValue,
     verifyInputValue,
     findEmptyRequiredFields,
+    findAddAnotherButtons,
+    clickAddAnother,
+    countSectionRows,
+    auditAddAnotherButtons,
+    fillSelect2Field,
   };
 }
