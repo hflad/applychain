@@ -57,7 +57,19 @@ def load_applications(csv_path: str) -> pd.DataFrame:
             ]
         )
 
-    df = pd.read_csv(path)
+    parse_warning = None
+    parse_warning_detail = None
+    try:
+        df = pd.read_csv(path)
+    except pd.errors.ParserError as exc:
+        # Fallback for malformed CSV rows (extra delimiters, broken quoting, etc).
+        # Skip unreadable rows instead of crashing the whole dashboard.
+        parse_warning = (
+            "Malformed CSV rows were detected and skipped while loading the log. "
+            "Please review and repair the source file for full fidelity."
+        )
+        parse_warning_detail = str(exc)
+        df = pd.read_csv(path, engine="python", on_bad_lines="skip")
     for col in ["date", "company", "role", "status", "match_score", "notes", "jd_url", "resume_file"]:
         if col not in df.columns:
             df[col] = pd.NA
@@ -65,6 +77,10 @@ def load_applications(csv_path: str) -> pd.DataFrame:
     df["date"] = pd.to_datetime(df["date"], errors="coerce")
     df["match_score"] = pd.to_numeric(df["match_score"], errors="coerce")
     df["status"] = df["status"].astype("string").str.strip().str.lower().fillna("applied")
+    if parse_warning:
+        df.attrs["parse_warning"] = parse_warning
+    if parse_warning_detail:
+        df.attrs["parse_warning_detail"] = parse_warning_detail
     return df
 
 
@@ -359,6 +375,10 @@ def main() -> None:
     st.caption(f"Workspace root: {workspace_root}")
 
     df = load_applications(str(csv_path))
+    if df.attrs.get("parse_warning"):
+        st.warning(df.attrs["parse_warning"])
+        if df.attrs.get("parse_warning_detail"):
+            st.caption(f"Parser detail: {df.attrs['parse_warning_detail']}")
 
     render_stats(df)
     st.divider()
