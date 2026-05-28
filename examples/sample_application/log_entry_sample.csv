@@ -1,0 +1,2 @@
+date,company,role,jd_url,ats_platform,status,resume_file,cover_letter_file,match_score,notes
+2026-01-15,Acme Analytics Corp,Data Analyst,https://example.com/jobs/12345,Greenhouse,applied,Acme_DataAnalyst_Resume_2026-01-15.docx,Acme_DataAnalyst_CoverLetter_2026-01-15.docx,78,"Strong SQL/Python/Tableau match. Gaps: dbt, Snowflake. Submitted via Greenhouse — no issues."

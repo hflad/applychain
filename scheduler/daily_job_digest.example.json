@@ -1,0 +1,16 @@
+{
+  "task_name": "Daily Job Digest",
+  "description": "Each morning, search for new job postings matching my target roles and preferred locations, score them against my profile, and send a summary.",
+  "schedule": "Every day at 8:00 AM",
+  "cron": "0 8 * * *",
+  "instructions": [
+    "Search LinkedIn Jobs for new postings matching roles in profile_knowledge_base/desired_roles.txt",
+    "Filter by locations in profile_knowledge_base/desired_locations.txt",
+    "Score each posting using prompts/job_score.md",
+    "Exclude any role already in logs/applications_log.csv",
+    "Summarize the top 5 new matches as a short digest",
+    "Do NOT apply to any role — discovery only"
+  ],
+  "output": "Summary message in chat",
+  "notes": "Edit desired_roles.txt and desired_locations.txt to control what gets surfaced."
+}
