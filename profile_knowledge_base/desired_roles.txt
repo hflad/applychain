@@ -1,0 +1,12 @@
+# Desired Job Titles
+# List target roles, one per line, most preferred first.
+# Used for job search queries and fit scoring.
+
+# Example (replace with your own):
+# 1. Data Analyst
+# 2. Business Intelligence Analyst
+# 3. Analytics Engineer
+# 4. Data Scientist
+# 5. Product Analyst
+
+[FILL IN — list your target job titles, ranked 1 through N]

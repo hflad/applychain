@@ -1,0 +1,15 @@
+# Desired Job Locations
+# List preferred cities/regions, one per line, most preferred first.
+# Used for fit scoring and location field autofill.
+# Update rankings as your priorities change.
+
+# Format: City, State (or "Remote" for remote-first preference)
+
+# Example (replace with your own):
+# 1. New York, NY
+# 2. San Francisco, CA
+# 3. Austin, TX
+# 4. Remote (nationwide)
+# 5. Boston, MA
+
+[FILL IN — list your preferred locations, ranked 1 through N]

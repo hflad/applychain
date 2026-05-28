@@ -1,0 +1,46 @@
+# Environment / credentials
+.env
+*.env
+env.rtf
+*.rtf
+secrets/
+
+# Output folders (personal application data — do not commit)
+resumes/
+cover_letters/
+job_descriptions/
+applications/
+logs/
+exports/
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+
+# Node
+node_modules/
+
+# Editor artifacts
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Generated documents
+*.docx
+*.xlsx
+*.pdf
+
+# Log files
+*.log
