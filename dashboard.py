@@ -497,7 +497,8 @@ def main() -> None:
 
     workspace_root = resolve_workspace()
     csv_path = workspace_root / "logs" / "applications_log.csv"
-    logo_candidates = [
+    
+logo_candidates = [
     workspace_root / "assets" / "applychain_logo.png",
     workspace_root / "assets" / "applychain-logo.png",
     workspace_root / "assets" / "logo.png",
