@@ -63,7 +63,7 @@ def load_applications(csv_path: str) -> pd.DataFrame:
 
     df["date"] = pd.to_datetime(df["date"], errors="coerce")
     df["match_score"] = pd.to_numeric(df["match_score"], errors="coerce")
-    df["status"] = df["status"].astype("string").str.lower().fillna("applied")
+    df["status"] = df["status"].astype("string").str.strip().str.lower().fillna("applied")
     return df
 
 
@@ -76,15 +76,74 @@ def save_status_updates(df: pd.DataFrame, csv_path: Path) -> None:
     out.to_csv(csv_path, index=False)
 
 
+def _build_application_key(df: pd.DataFrame) -> pd.Series:
+    if "application_id" in df.columns:
+        app_id = df["application_id"].fillna("").astype("string").str.strip().str.lower()
+    else:
+        app_id = pd.Series([""] * len(df), index=df.index, dtype="string")
+    company = df["company"].fillna("").astype("string").str.strip().str.lower()
+    role = df["role"].fillna("").astype("string").str.strip().str.lower()
+    # Deliberately avoid date in the primary identity key so retries/re-entries
+    # of the same job posting do not inflate "Total Applied".
+    fallback = company + "|" + role
+    return app_id.where(app_id.ne(""), fallback)
+
+
+def compute_metrics_frame(df: pd.DataFrame) -> tuple[pd.DataFrame, dict]:
+    """Build a deterministic metrics frame and diagnostics."""
+    metrics_df = df.copy()
+    metrics_df["status"] = metrics_df["status"].astype("string").str.strip().str.lower()
+    metrics_df["application_key"] = _build_application_key(metrics_df)
+    metrics_df["has_required_identity"] = (
+        metrics_df["company"].notna() & metrics_df["role"].notna()
+        & metrics_df["company"].astype("string").str.strip().ne("")
+        & metrics_df["role"].astype("string").str.strip().ne("")
+    )
+    metrics_df["is_submitted_status"] = metrics_df["status"].isin(SUBMITTED_STATUSES)
+    metrics_df["is_excluded_status"] = metrics_df["status"].isin(NON_SUBMITTED_STATUSES)
+    metrics_df["is_submitted_candidate"] = metrics_df["has_required_identity"] & metrics_df["is_submitted_status"]
+
+    submitted = metrics_df[metrics_df["is_submitted_candidate"]].copy()
+    dedup_submitted = (
+        submitted.sort_values(["date"], ascending=False)
+        .drop_duplicates(subset=["application_key"], keep="first")
+    )
+
+    status_counts = metrics_df["status"].value_counts(dropna=False).to_dict()
+    duplicate_rows = int(metrics_df.duplicated(keep=False).sum())
+    duplicate_application_keys = int(metrics_df["application_key"].duplicated(keep=False).sum())
+    malformed_statuses = sorted(
+        set(metrics_df["status"].dropna().unique()) - SUBMITTED_STATUSES - NON_SUBMITTED_STATUSES
+    )
+    diagnostics = {
+        "raw_rows": len(metrics_df),
+        "submitted_candidate_rows": len(submitted),
+        "deduplicated_submitted_rows": len(dedup_submitted),
+        "duplicate_full_rows": duplicate_rows,
+        "duplicate_application_keys": duplicate_application_keys,
+        "unique_company_role_pairs": int(
+            metrics_df.assign(
+                company_norm=metrics_df["company"].fillna("").astype("string").str.strip().str.lower(),
+                role_norm=metrics_df["role"].fillna("").astype("string").str.strip().str.lower(),
+            )[["company_norm", "role_norm"]].drop_duplicates().shape[0]
+        ),
+        "status_counts": status_counts,
+        "malformed_statuses": malformed_statuses,
+        "excluded_status_rows": int(metrics_df["is_excluded_status"].sum()),
+    }
+    return dedup_submitted, diagnostics
+
+
 def render_stats(df: pd.DataFrame) -> None:
-    total = len(df)
-    responded = df["status"].isin(["interviewing", "offer"]).sum() if total else 0
+    metrics_df, diagnostics = compute_metrics_frame(df)
+    total = len(metrics_df)
+    responded = metrics_df["status"].isin(["interviewing", "offer"]).sum() if total else 0
     response_rate = (responded / total * 100) if total else 0
-    avg_match = df["match_score"].mean() if total else 0
+    avg_match = metrics_df["match_score"].mean() if total else 0
 
     last_applied_days = None
-    if total and df["date"].notna().any():
-        last_date = df["date"].max()
+    if total and metrics_df["date"].notna().any():
+        last_date = metrics_df["date"].max()
         last_applied_days = (pd.Timestamp.now().normalize() - last_date.normalize()).days
 
     c1, c2, c3, c4 = st.columns(4)
@@ -92,6 +151,28 @@ def render_stats(df: pd.DataFrame) -> None:
     c2.metric("Response Rate", f"{response_rate:.1f}%")
     c3.metric("Avg Match Score", f"{avg_match:.1f}")
     c4.metric("Days Since Last Application", "N/A" if last_applied_days is None else str(last_applied_days))
+
+    with st.expander("Metric Debug Details"):
+        st.write("Metric logic: submitted rows = status in applied/interviewing/rejected/offer + non-empty company/role; deduplicated by application_id when present, else company|role.")
+        st.write(f"Raw dataframe rows: {diagnostics['raw_rows']}")
+        st.write(f"Submitted candidate rows before dedupe: {diagnostics['submitted_candidate_rows']}")
+        st.write(f"Total applied after dedupe (displayed metric): {diagnostics['deduplicated_submitted_rows']}")
+        st.write(f"Rows excluded due to non-submitted statuses: {diagnostics['excluded_status_rows']}")
+        st.write(f"Duplicate full rows detected: {diagnostics['duplicate_full_rows']}")
+        st.write(f"Duplicate application keys detected: {diagnostics['duplicate_application_keys']}")
+        st.write(f"Unique company+role pairs: {diagnostics['unique_company_role_pairs']}")
+        st.write("Status counts:", diagnostics["status_counts"])
+        if diagnostics["malformed_statuses"]:
+            st.warning(f"Malformed/unknown statuses detected: {', '.join(diagnostics['malformed_statuses'])}")
+        if diagnostics["deduplicated_submitted_rows"] > diagnostics["unique_company_role_pairs"]:
+            st.warning("Submitted count exceeds unique company+role pairs; possible multiple applications/retries exist.")
+        if diagnostics["duplicate_application_keys"] > 0:
+            st.warning("Duplicate application keys detected; deduplication applied in metrics.")
+        st.write("Rows contributing to Total Applied (deduplicated submitted set):")
+        st.dataframe(
+            metrics_df[["date", "company", "role", "status", "match_score", "application_key"]].sort_values("date", ascending=False),
+            use_container_width=True,
+        )
 
 
 def render_pipeline(df: pd.DataFrame) -> None:
