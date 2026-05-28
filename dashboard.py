@@ -7,6 +7,7 @@ import streamlit as st
 
 
 STATUSES = ["applied", "interviewing", "rejected", "offer"]
+STATUS_UI_ORDER = ["applied", "queued", "failed", "review needed", "submitted", "draft", "interviewing", "rejected", "offer"]
 SUBMITTED_STATUSES = set(STATUSES)
 NON_SUBMITTED_STATUSES = {
     "draft",
@@ -56,7 +57,7 @@ def load_applications(csv_path: str) -> pd.DataFrame:
             ]
         )
 
-    df = pd.read_csv(path, on_bad_lines='skip') # change this later
+    df = pd.read_csv(path)
     for col in ["date", "company", "role", "status", "match_score", "notes", "jd_url", "resume_file"]:
         if col not in df.columns:
             df[col] = pd.NA
@@ -146,11 +147,47 @@ def render_stats(df: pd.DataFrame) -> None:
         last_date = metrics_df["date"].max()
         last_applied_days = (pd.Timestamp.now().normalize() - last_date.normalize()).days
 
-    c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Total Applied", f"{total}")
-    c2.metric("Response Rate", f"{response_rate:.1f}%")
-    c3.metric("Avg Match Score", f"{avg_match:.1f}")
-    c4.metric("Days Since Last Application", "N/A" if last_applied_days is None else str(last_applied_days))
+    stats = [
+        ("Total Applied", f"{total}", "Deduplicated submitted apps"),
+        ("Response Rate", f"{response_rate:.1f}%", "Interviewing + offer"),
+        ("Avg Match Score", f"{avg_match:.1f}", "Submitted set only"),
+        ("Days Since Last Application", "N/A" if last_applied_days is None else str(last_applied_days), "From most recent submission"),
+    ]
+    cols = st.columns(4)
+    for col, (label, value, hint) in zip(cols, stats):
+        col.markdown(
+            f"""
+            <div class="kpi-card">
+                <div class="kpi-label">{label}</div>
+                <div class="kpi-value">{value}</div>
+                <div class="kpi-hint">{hint}</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    with st.expander("Metric Debug Details"):
+        st.write("Metric logic: submitted rows = status in applied/interviewing/rejected/offer + non-empty company/role; deduplicated by application_id when present, else company|role.")
+        st.write(f"Raw dataframe rows: {diagnostics['raw_rows']}")
+        st.write(f"Submitted candidate rows before dedupe: {diagnostics['submitted_candidate_rows']}")
+        st.write(f"Total applied after dedupe (displayed metric): {diagnostics['deduplicated_submitted_rows']}")
+        st.write(f"Rows excluded due to non-submitted statuses: {diagnostics['excluded_status_rows']}")
+        st.write(f"Duplicate full rows detected: {diagnostics['duplicate_full_rows']}")
+        st.write(f"Duplicate application keys detected: {diagnostics['duplicate_application_keys']}")
+        st.write(f"Unique company+role pairs: {diagnostics['unique_company_role_pairs']}")
+        st.write("Status counts:", diagnostics["status_counts"])
+        if diagnostics["malformed_statuses"]:
+            st.warning(f"Malformed/unknown statuses detected: {', '.join(diagnostics['malformed_statuses'])}")
+        if diagnostics["deduplicated_submitted_rows"] > diagnostics["unique_company_role_pairs"]:
+            st.warning("Submitted count exceeds unique company+role pairs; possible multiple applications/retries exist.")
+        if diagnostics["duplicate_application_keys"] > 0:
+            st.warning("Duplicate application keys detected; deduplication applied in metrics.")
+        st.write("Rows contributing to Total Applied (deduplicated submitted set):")
+        st.dataframe(
+            metrics_df[["date", "company", "role", "status", "match_score", "application_key"]].sort_values("date", ascending=False),
+            use_container_width=True,
+        )
+
 
 def render_pipeline(df: pd.DataFrame) -> None:
     st.subheader("Pipeline")
@@ -165,18 +202,23 @@ def render_pipeline(df: pd.DataFrame) -> None:
                 date_str = row["date"].strftime("%Y-%m-%d") if pd.notna(row["date"]) else "Unknown date"
                 score = "—" if pd.isna(row["match_score"]) else f"{row['match_score']:.1f}"
                 st.markdown(
-                    f"<div style='padding:0.5rem;border:1px solid #333;border-radius:8px;margin-bottom:0.5rem'>"
-                    f"<div><b>{row.get('company', '')}</b></div>"
-                    f"<div>{row.get('role', '')}</div>"
-                    f"<div style='font-size:0.85rem;color:#9aa0a6'>{date_str} · Match: {score}</div>"
-                    f"</div>",
+                    f"""
+                    <div class="pipeline-card">
+                        <div class="pipeline-company">{row.get('company', '')}</div>
+                        <div class="pipeline-role">{row.get('role', '')}</div>
+                        <div class="pipeline-meta">{date_str} · Match: {score}</div>
+                    </div>
+                    """,
                     unsafe_allow_html=True,
                 )
 
 
 def render_log_table(df: pd.DataFrame, csv_path: Path) -> pd.DataFrame:
     st.subheader("Application Log")
-    filter_status = st.multiselect("Filter by status", options=STATUSES, default=STATUSES)
+    st.caption("Filter by status and edit status inline. Changes are saved immediately.")
+    all_statuses = sorted(set(df["status"].dropna().astype("string").str.strip().str.lower().tolist()) | set(STATUS_UI_ORDER))
+    default_statuses = [s for s in STATUS_UI_ORDER if s in all_statuses]
+    filter_status = st.multiselect("Status", options=all_statuses, default=default_statuses)
     filtered = df[df["status"].isin(filter_status)] if filter_status else df.iloc[0:0]
 
     editable = filtered.copy()
@@ -189,7 +231,7 @@ def render_log_table(df: pd.DataFrame, csv_path: Path) -> pd.DataFrame:
         hide_index=False,
         disabled=[c for c in editable.columns if c != "status"],
         column_config={
-            "status": st.column_config.SelectboxColumn("status", options=STATUSES, required=True),
+            "status": st.column_config.SelectboxColumn("status", options=all_statuses, required=True),
             "date": st.column_config.DateColumn("date", format="YYYY-MM-DD"),
         },
     )
@@ -226,7 +268,8 @@ def render_detail_drawer(df: pd.DataFrame, workspace_root: Path) -> None:
 
     st.markdown(f"**Company:** {row.get('company', '')}")
     st.markdown(f"**Role:** {row.get('role', '')}")
-    st.markdown(f"**Status:** {row.get('status', '')}")
+    status_value = str(row.get('status', '')).strip().title()
+    st.markdown(f"**Status:** <span class='status-pill status-{str(row.get('status', '')).strip().lower().replace(' ', '-')}'>{status_value}</span>", unsafe_allow_html=True)
     st.markdown(f"**Date:** {row['date'].strftime('%Y-%m-%d') if pd.notna(row['date']) else 'Unknown'}")
     st.markdown(f"**Match Score:** {'—' if pd.isna(row.get('match_score')) else row.get('match_score')}")
     st.markdown(f"**JD file/url:** `{jd_file}`")
@@ -246,9 +289,64 @@ def main() -> None:
     st.markdown(
         """
         <style>
-            .stApp {background-color: #0f1117; color: #e6e6e6;}
-            [data-testid="stMetricValue"] {color: #f1f3f4;}
-            [data-testid="stMetricLabel"] {color: #aab0b6;}
+            :root {
+              --bg: #0f1115;
+              --panel: #151922;
+              --panel-2: #171c26;
+              --border: #252c38;
+              --text: #e6e8ec;
+              --muted: #9aa4b2;
+              --accent: #7aa2f7;
+              --ok: #7cbf9a;
+              --warn: #c9aa7a;
+              --bad: #b57d86;
+            }
+            .stApp {
+              background: var(--bg);
+              color: var(--text);
+              font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+            }
+            .block-container {padding-top: 2rem; padding-bottom: 2rem;}
+            h1, h2, h3 {letter-spacing: -0.02em;}
+            h1 {font-weight: 700; margin-bottom: 0.25rem;}
+            h2, h3 {font-weight: 600;}
+            .kpi-card {
+              background: linear-gradient(180deg, var(--panel), var(--panel-2));
+              border: 1px solid var(--border);
+              border-radius: 12px;
+              padding: 0.85rem 1rem;
+              min-height: 94px;
+              transition: border-color .15s ease, transform .15s ease;
+            }
+            .kpi-card:hover {border-color: #364152; transform: translateY(-1px);}
+            .kpi-label {font-size: 0.8rem; color: var(--muted); margin-bottom: 0.35rem; text-transform: uppercase; letter-spacing: .04em;}
+            .kpi-value {font-size: 1.65rem; line-height: 1.1; font-weight: 650; color: var(--text);}
+            .kpi-hint {font-size: 0.75rem; color: #7f8997; margin-top: 0.3rem;}
+            .pipeline-card {
+              background: #121720;
+              border: 1px solid var(--border);
+              border-radius: 10px;
+              padding: 0.65rem 0.75rem;
+              margin-bottom: 0.5rem;
+            }
+            .pipeline-company {font-weight: 620; margin-bottom: 0.15rem;}
+            .pipeline-role {color: #ccd3dd; margin-bottom: 0.2rem; font-size: 0.95rem;}
+            .pipeline-meta {font-size: 0.8rem; color: var(--muted);}
+            .status-pill {
+              border-radius: 999px; padding: 0.2rem 0.55rem; border: 1px solid transparent; font-size: 0.78rem;
+              background: #1a1f2b; color: #cfd6e0;
+            }
+            .status-applied, .status-submitted {border-color: #335777; color: #95bddf;}
+            .status-interviewing, .status-offer {border-color: #2f5b45; color: #95c9ac;}
+            .status-rejected, .status-failed {border-color: #6a3c45; color: #d5a4ad;}
+            .status-draft, .status-review-needed, .status-queued {border-color: #5e5366; color: #c1b5ca;}
+            [data-testid="stDataFrame"], [data-testid="stDataEditor"] {
+              border: 1px solid var(--border);
+              border-radius: 10px;
+              overflow: hidden;
+            }
+            [data-testid="stSidebar"] {background: #11151d;}
+            [data-testid="stExpander"] {border: 1px solid var(--border); border-radius: 10px;}
         </style>
         """,
         unsafe_allow_html=True,
