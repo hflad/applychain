@@ -306,63 +306,164 @@ def main() -> None:
         """
         <style>
             :root {
-              --bg: #0f1115;
-              --panel: #151922;
-              --panel-2: #171c26;
-              --border: #252c38;
-              --text: #e6e8ec;
-              --muted: #9aa4b2;
-              --accent: #7aa2f7;
-              --ok: #7cbf9a;
-              --warn: #c9aa7a;
-              --bad: #b57d86;
+              --bg: #0d1016;
+              --bg-soft: #10141c;
+              --panel: #141923;
+              --panel-2: #161c27;
+              --panel-3: #1a2130;
+              --border: #252d3a;
+              --border-soft: #212837;
+              --text: #e7eaf0;
+              --muted: #9ba6b5;
+              --muted-2: #7f8a9b;
+              --accent: #86a8d8;
+              --ok: #8fbda5;
+              --warn: #c7ad8a;
+              --bad: #bd8f98;
             }
             .stApp {
               background: var(--bg);
               color: var(--text);
-              font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+              font-family: "SF Pro Display", Inter, "Helvetica Neue", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
             }
-            .block-container {padding-top: 2rem; padding-bottom: 2rem;}
-            h1, h2, h3 {letter-spacing: -0.02em;}
-            h1 {font-weight: 700; margin-bottom: 0.25rem;}
-            h2, h3 {font-weight: 600;}
+            .block-container {padding-top: 1.7rem; padding-bottom: 2rem; max-width: 1320px;}
+            .app-header {
+              background: linear-gradient(180deg, var(--panel), var(--panel-2));
+              border: 1px solid var(--border-soft);
+              border-radius: 12px;
+              padding: 0.8rem 1rem 0.85rem 1rem;
+              margin-bottom: 1rem;
+              box-shadow: 0 4px 18px rgba(3, 7, 18, 0.24);
+            }
+            .app-header-row {
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              gap: 0.75rem;
+              flex-wrap: wrap;
+            }
+            .brand-title {
+              font-size: 1.35rem;
+              font-weight: 700;
+              letter-spacing: -0.02em;
+              color: #eef2f8;
+              line-height: 1.1;
+            }
+            .brand-title .accent {color: #9ebbe3;}
+            .brand-subtitle {
+              font-size: 0.78rem;
+              color: var(--muted);
+              margin-top: 0.2rem;
+              letter-spacing: .02em;
+            }
+            .brand-meta {
+              font-size: 0.74rem;
+              color: var(--muted-2);
+              margin-top: 0.18rem;
+            }
+            .header-badges {display: flex; gap: 0.4rem; flex-wrap: wrap;}
+            .header-pill {
+              display: inline-block;
+              border: 1px solid var(--border-soft);
+              border-radius: 999px;
+              padding: 0.18rem 0.52rem;
+              font-size: 0.7rem;
+              color: #c5cfdd;
+              background: #182133;
+            }
+            .header-pill.ok {
+              color: #a9d0bb;
+              border-color: #2e4d40;
+              background: rgba(94, 145, 114, 0.14);
+            }
+            h1, h2, h3 {letter-spacing: -0.02em; color: var(--text);}
+            h1 {font-weight: 680; margin-bottom: 0.25rem; font-size: 2.45rem;}
+            h2, h3 {font-weight: 620;}
+            p, label, [data-testid="stMarkdownContainer"] p {color: #c8d0db;}
+            [data-testid="stCaptionContainer"] {color: var(--muted-2);}
             .kpi-card {
               background: linear-gradient(180deg, var(--panel), var(--panel-2));
-              border: 1px solid var(--border);
-              border-radius: 12px;
-              padding: 0.85rem 1rem;
-              min-height: 94px;
-              transition: border-color .15s ease, transform .15s ease;
+              border: 1px solid var(--border-soft);
+              border-radius: 11px;
+              padding: 0.8rem 0.95rem;
+              min-height: 88px;
+              box-shadow: 0 2px 14px rgba(3, 7, 18, 0.2);
+              transition: border-color .15s ease, transform .15s ease, box-shadow .15s ease;
             }
-            .kpi-card:hover {border-color: #364152; transform: translateY(-1px);}
-            .kpi-label {font-size: 0.8rem; color: var(--muted); margin-bottom: 0.35rem; text-transform: uppercase; letter-spacing: .04em;}
-            .kpi-value {font-size: 1.65rem; line-height: 1.1; font-weight: 650; color: var(--text);}
-            .kpi-hint {font-size: 0.75rem; color: #7f8997; margin-top: 0.3rem;}
+            .kpi-card:hover {border-color: #334159; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(3, 7, 18, 0.28);}
+            .kpi-label {font-size: 0.73rem; color: var(--muted); margin-bottom: 0.28rem; text-transform: uppercase; letter-spacing: .05em;}
+            .kpi-value {font-size: 1.5rem; line-height: 1.1; font-weight: 640; color: var(--text);}
+            .kpi-hint {font-size: 0.72rem; color: var(--muted-2); margin-top: 0.28rem;}
             .pipeline-card {
-              background: #121720;
-              border: 1px solid var(--border);
+              background: var(--bg-soft);
+              border: 1px solid var(--border-soft);
               border-radius: 10px;
-              padding: 0.65rem 0.75rem;
-              margin-bottom: 0.5rem;
+              padding: 0.58rem 0.72rem;
+              margin-bottom: 0.48rem;
+              box-shadow: 0 1px 8px rgba(2, 6, 16, 0.18);
             }
             .pipeline-company {font-weight: 620; margin-bottom: 0.15rem;}
-            .pipeline-role {color: #ccd3dd; margin-bottom: 0.2rem; font-size: 0.95rem;}
-            .pipeline-meta {font-size: 0.8rem; color: var(--muted);}
+            .pipeline-role {color: #cbd2dc; margin-bottom: 0.2rem; font-size: 0.92rem;}
+            .pipeline-meta {font-size: 0.78rem; color: var(--muted);}
             .status-pill {
-              border-radius: 999px; padding: 0.2rem 0.55rem; border: 1px solid transparent; font-size: 0.78rem;
-              background: #1a1f2b; color: #cfd6e0;
+              display: inline-block;
+              border-radius: 999px; padding: 0.12rem 0.5rem; border: 1px solid transparent; font-size: 0.72rem;
+              font-weight: 520;
+              background: #1a2231; color: #c8d2df;
             }
-            .status-applied, .status-submitted {border-color: #335777; color: #95bddf;}
-            .status-interviewing, .status-offer {border-color: #2f5b45; color: #95c9ac;}
-            .status-rejected, .status-failed {border-color: #6a3c45; color: #d5a4ad;}
-            .status-draft, .status-review-needed, .status-queued {border-color: #5e5366; color: #c1b5ca;}
-            [data-testid="stDataFrame"], [data-testid="stDataEditor"] {
-              border: 1px solid var(--border);
+            .status-applied, .status-submitted {border-color: #344c66; color: #a6c0df; background: rgba(97, 133, 175, 0.14);}
+            .status-interviewing, .status-offer {border-color: #325243; color: #a2ccb3; background: rgba(93, 149, 119, 0.14);}
+            .status-rejected, .status-failed {border-color: #61414a; color: #d4adb4; background: rgba(163, 98, 114, 0.13);}
+            .status-draft, .status-review-needed, .status-queued {border-color: #4f4d60; color: #c4bbcf; background: rgba(121, 112, 145, 0.12);}
+
+            [data-testid="stDataFrame"], [data-testid="stDataEditor"], [data-testid="stTable"] {
+              border: 1px solid var(--border-soft);
               border-radius: 10px;
               overflow: hidden;
+              background: var(--panel);
             }
-            [data-testid="stSidebar"] {background: #11151d;}
-            [data-testid="stExpander"] {border: 1px solid var(--border); border-radius: 10px;}
+            [data-testid="stDataEditor"] [role="grid"],
+            [data-testid="stDataFrame"] [role="grid"] {
+              background: var(--panel) !important;
+              color: var(--text) !important;
+            }
+            [data-testid="stDataEditor"] [role="columnheader"],
+            [data-testid="stDataFrame"] [role="columnheader"] {
+              background: var(--panel-3) !important;
+              color: var(--muted) !important;
+              border-bottom: 1px solid var(--border-soft) !important;
+              font-size: 0.74rem !important;
+              text-transform: uppercase;
+              letter-spacing: .03em;
+            }
+            [data-testid="stDataEditor"] [role="gridcell"],
+            [data-testid="stDataFrame"] [role="gridcell"] {
+              background: var(--panel) !important;
+              border-bottom: 1px solid rgba(255,255,255,0.04) !important;
+              color: #d6dde8 !important;
+              font-size: 0.86rem !important;
+            }
+            [data-testid="stDataEditor"] [role="row"]:hover [role="gridcell"],
+            [data-testid="stDataFrame"] [role="row"]:hover [role="gridcell"] {
+              background: #1a2332 !important;
+            }
+            [data-baseweb="select"] > div, [data-baseweb="input"] > div, .stTextInput > div > div {
+              background: var(--panel) !important;
+              border: 1px solid var(--border-soft) !important;
+              border-radius: 9px !important;
+              color: var(--text) !important;
+            }
+            [data-baseweb="tag"] {
+              background: #233047 !important;
+              border: 1px solid #2f415f !important;
+              color: #bdd1eb !important;
+              border-radius: 999px !important;
+              font-size: 0.72rem !important;
+            }
+            [data-testid="stSidebar"] {background: #0f141d; border-right: 1px solid var(--border-soft);}
+            [data-testid="stExpander"] {border: 1px solid var(--border-soft); border-radius: 10px; background: var(--panel);}
+            hr {border-color: rgba(255,255,255,0.07);}
+            div[data-testid="stVerticalBlock"] > div:has(> div > .kpi-card) {gap: 0.6rem;}
         </style>
         """,
         unsafe_allow_html=True,
@@ -371,8 +472,24 @@ def main() -> None:
     workspace_root = resolve_workspace()
     csv_path = workspace_root / "logs" / "applications_log.csv"
 
-    st.title("Job Applications Dashboard")
-    st.caption(f"Workspace root: {workspace_root}")
+    st.markdown(
+        f"""
+        <div class="app-header">
+          <div class="app-header-row">
+            <div>
+              <div class="brand-title">Apply<span class="accent">Chain</span></div>
+              <div class="brand-subtitle">AI-Assisted Recruiting Workflow System</div>
+              <div class="brand-meta">Created by ApplyChain User · Local-First Job Application Operations</div>
+            </div>
+            <div class="header-badges">
+              <span class="header-pill ok">● Local Mode</span>
+              <span class="header-pill">Workspace: {workspace_root}</span>
+            </div>
+          </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
     df = load_applications(str(csv_path))
     if df.attrs.get("parse_warning"):
