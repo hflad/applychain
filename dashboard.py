@@ -7,6 +7,18 @@ import streamlit as st
 
 
 STATUSES = ["applied", "interviewing", "rejected", "offer"]
+SUBMITTED_STATUSES = set(STATUSES)
+NON_SUBMITTED_STATUSES = {
+    "draft",
+    "retry",
+    "retries",
+    "queued",
+    "queue",
+    "failed",
+    "placeholder",
+    "pending",
+    "in_progress",
+}
 
 
 def parse_workspace_arg() -> Optional[Path]:
