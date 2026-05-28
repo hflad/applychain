@@ -20,13 +20,28 @@ If you haven't read the MaverickAI guide, it's worth your time. It covers the co
 
 ---
 
+## Code Generation and Assistance
+- **Claude Code** was used extensively for JavaScript helper utilities, repository scaffolding, and establishing portions of the project structure and development workflow.
+
+- **OpenAI Codex** was used extensively throughout development of the Streamlit dashboard, front-end refinement, UI iteration, and rapid prototyping.
+
+While AI-assisted tooling accelerated development significantly, all generated code was manually reviewed, tested, debugged, and iterated on throughout the project. Architectural decisions, workflow design, integration logic, and final implementation direction remained human-supervised and hands-on from start to finish.
+
+---
+
 ## Personal Acknowledgements
 
-**To my Dad** — for getting me a Raspberry Pi when I was 11. That one gift set a lot in motion. Thank you.
+**To my Dad** — For gifting me a Raspberry Pi when I was 11, for constantly reminding me that “learning to code is the future, son,” and for supporting me throughout every step of my academic and professional journey. That early encouragement sparked a passion for technology that ultimately led me to pursue a field of study that opened the door to completing both my bachelor’s and master’s degrees in just four years.
 
-**To Suresh** — friend, mentor, and the person who showed me what it actually means to think like a technologist. The way I approach problems is shaped by your influence more than you probably know.
+**To Suresh K** — My friend, mentor, and the person who showed me what it actually means to think like a technologist. The way I approach problems in this space is shaped by your influence more than you probably know.
 
-**To the MSBA faculty and my classmates at Miami** — for teaching me how to do some genuinely cool stuff, and for making the kind of environment where curiosity gets rewarded. I'm building on what we built together.
+**To the MSBA cohort and faculty at Miami** — For teaching me how to do some genuinely cool stuff, use cutting-edge tools, and for fostering an environment where curiosity gets rewarded. I'm building on what we built together.
+
+**To my past professional colleagues** - For giving me the opportunity and platform to grow and develop my skills, both hard and soft, in a real-world setting. This project would have been ill-informed without some of the knowledge and best practices I gained from these engagements and I truly appreciate everyone I crossed paths with and got to learn from.
+
+**To any recruiters looking for a data scientist, data engineer, AI specialist, or any kind of tech consultant** - thanks for checking this out! I would love to chat about opportunities to further my professional development with your organization. My LinkedIn is in my GitHub bio and I would love to hear from you.
+
+I built this tool a few weeks post-grad and knowing I needed to step up my game to find the right opportunity in this market. I hope this tool can help others do the same, at scale, and at speed. **Let's make it happen.**
 
 ---
 

@@ -31,4 +31,4 @@ Thank you for contributing! This project welcomes improvements to ATS adapters, 
 
 ## Questions
 
-Open an issue or start a discussion. We're happy to help scope contributions before you write code.
+Open an issue or start a discussion. I'd be happy to help scope contributions before you write code.
