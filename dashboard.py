@@ -316,7 +316,8 @@ def main() -> None:
               --text: #e7eaf0;
               --muted: #9ba6b5;
               --muted-2: #7f8a9b;
-              --accent: #86a8d8;
+              --accent: #2d8cff;
+              --accent-2: #ff8a1f;
               --ok: #8fbda5;
               --warn: #c7ad8a;
               --bad: #bd8f98;
@@ -328,7 +329,7 @@ def main() -> None:
             }
             .block-container {padding-top: 1.7rem; padding-bottom: 2rem; max-width: 1320px;}
             .app-header {
-              background: linear-gradient(180deg, var(--panel), var(--panel-2));
+              background: linear-gradient(180deg, #111a2a, #151c27);
               border: 1px solid var(--border-soft);
               border-radius: 12px;
               padding: 0.8rem 1rem 0.85rem 1rem;
@@ -338,28 +339,34 @@ def main() -> None:
             .app-header-row {
               display: flex;
               align-items: center;
-              justify-content: space-between;
+              justify-content: center;
               gap: 0.75rem;
               flex-wrap: wrap;
             }
+            .logo-wrap {text-align: center; width: 100%;}
+            .logo-wrap img {max-height: 92px; object-fit: contain; margin: 0 auto 0.2rem auto;}
             .brand-title {
               font-size: 1.35rem;
               font-weight: 700;
               letter-spacing: -0.02em;
               color: #eef2f8;
               line-height: 1.1;
+              text-align: center;
             }
-            .brand-title .accent {color: #9ebbe3;}
+            .brand-title .accent-blue {color: var(--accent);}
+            .brand-title .accent-orange {color: var(--accent-2);}
             .brand-subtitle {
               font-size: 0.78rem;
               color: var(--muted);
               margin-top: 0.2rem;
               letter-spacing: .02em;
+              text-align: center;
             }
             .brand-meta {
               font-size: 0.74rem;
               color: var(--muted-2);
               margin-top: 0.18rem;
+              text-align: center;
             }
             .header-badges {display: flex; gap: 0.4rem; flex-wrap: wrap;}
             .header-pill {
@@ -372,9 +379,9 @@ def main() -> None:
               background: #182133;
             }
             .header-pill.ok {
-              color: #a9d0bb;
-              border-color: #2e4d40;
-              background: rgba(94, 145, 114, 0.14);
+              color: #9ec2ff;
+              border-color: #355184;
+              background: rgba(45, 140, 255, 0.16);
             }
             h1, h2, h3 {letter-spacing: -0.02em; color: var(--text);}
             h1 {font-weight: 680; margin-bottom: 0.25rem; font-size: 2.45rem;}
@@ -471,16 +478,25 @@ def main() -> None:
 
     workspace_root = resolve_workspace()
     csv_path = workspace_root / "logs" / "applications_log.csv"
+    logo_candidates = [
+        workspace_root / "assets" / "applychain_logo.png",
+        workspace_root / "assets" / "applychain-logo.png",
+        workspace_root / "applychain_logo.png",
+        workspace_root / "logo.png",
+    ]
+    logo_path = next((p for p in logo_candidates if p.exists()), None)
 
     st.markdown(
         f"""
         <div class="app-header">
           <div class="app-header-row">
-            <div>
-              <div class="brand-title">Apply<span class="accent">Chain</span></div>
+            <div style="width:100%">
+              <div class="brand-title"><span class="accent-blue">Apply</span><span class="accent-orange">Chain</span></div>
               <div class="brand-subtitle">AI-Assisted Recruiting Workflow System</div>
               <div class="brand-meta">Created by ApplyChain User · Local-First Job Application Operations</div>
-            </div>
+            </div>            
+          </div>
+          <div class="app-header-row" style="margin-top:0.45rem;">
             <div class="header-badges">
               <span class="header-pill ok">● Local Mode</span>
               <span class="header-pill">Workspace: {workspace_root}</span>
@@ -490,6 +506,11 @@ def main() -> None:
         """,
         unsafe_allow_html=True,
     )
+    if logo_path:
+        c_logo = st.columns([1, 2, 1])[1]
+        c_logo.image(str(logo_path), width=560)
+    else:
+        st.caption("Tip: place your logo at `assets/applychain_logo.png` (or `logo.png`) to show it front and center.")
 
     df = load_applications(str(csv_path))
     if df.attrs.get("parse_warning"):
