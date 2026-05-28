@@ -12,6 +12,58 @@ A practical guide to using Claude for Chrome to fill and submit job applications
 
 ---
 
+## Recommended Browser Setup — Dedicated Debug Browser
+
+Running a separate Chrome instance for ApplyChain work (distinct from your everyday browsing) is strongly recommended. Here's why and how.
+
+### Why a Separate Browser?
+
+- **Stability** — the `--remote-debugging-port=9222` flag required for playwright_engine CDP mode can only be set at launch. You can't add it to a running Chrome. Keeping a dedicated instance means it's always ready.
+- **No interference** — your daily tabs, extensions, and sessions stay untouched. If something goes wrong during automation testing, your main browser is unaffected.
+- **Persistent logins** — you sign into LinkedIn, job portals, and the Claude extension once in the debug browser and they stay synced via your Google profile. No re-authentication every session.
+- **Clean testing environment** — you can observe exactly what Claude is doing in the debug browser without other tabs causing noise.
+
+### Setup
+
+**1. Launch the debug browser** (quit regular Chrome first if it's open, or use a different Chrome channel like Chrome Canary):
+```bash
+/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome \
+  --remote-debugging-port=9222 \
+  --user-data-dir="$HOME/.chrome-applychain" &
+```
+
+The `--user-data-dir` flag gives this instance its own profile directory — completely separate from your main Chrome profile.
+
+**2. Add a shell alias** so you can launch it easily in future:
+```bash
+# Add to ~/.zshrc or ~/.bash_profile
+alias chrome-debug="/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome \
+  --remote-debugging-port=9222 \
+  --user-data-dir=$HOME/.chrome-applychain"
+```
+Then `source ~/.zshrc` and just run `chrome-debug` to launch.
+
+**3. First-time setup in the debug browser:**
+- Sign into your Google account (syncs bookmarks, passwords if desired)
+- Install the Claude for Chrome extension and connect it
+- Sign into LinkedIn
+- Sign into any job portals you use frequently
+
+These sessions will persist across restarts because the profile is stored at `~/.chrome-applychain`.
+
+### Daily Workflow
+
+```
+1. Run: chrome-debug          ← launches debug browser with CDP ready
+2. Open Claude Desktop (Cowork)
+3. Tell Claude what to work on — it uses the Claude Chrome extension to see and interact with the debug browser
+4. If a complex ATS interaction fails, Claude calls playwright_engine via bash (CDP connects to the already-running debug browser on port 9222)
+```
+
+Your main Chrome browser continues running your personal tabs and is never touched.
+
+---
+
 ## Core Philosophy
 
 The browser automation layer is a **form-filling assistant**, not an autonomous agent. Claude navigates, reads, and fills — but you review and approve before anything is submitted.
