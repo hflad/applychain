@@ -1,4 +1,5 @@
 import argparse
+import base64
 from pathlib import Path
 from typing import Optional
 
@@ -31,12 +32,12 @@ def parse_workspace_arg() -> Optional[Path]:
 
 
 def resolve_workspace() -> Path:
+    script_dir = Path(__file__).resolve().parent
     override = parse_workspace_arg()
-
     if override:
         return override
+    return script_dir.parent
 
-    return Path(__file__).resolve().parent
 
 @st.cache_data(ttl=2)
 def load_applications(csv_path: str) -> pd.DataFrame:
@@ -107,14 +108,27 @@ def _build_application_key(df: pd.DataFrame) -> pd.Series:
 
 
 def find_logo_path(workspace_root: Path) -> Optional[Path]:
+    script_dir = Path(__file__).resolve().parent
     logo_candidates = [
         workspace_root / "assets" / "applychain_logo.png",
         workspace_root / "assets" / "applychain-logo.png",
         workspace_root / "assets" / "logo.png",
         workspace_root / "applychain_logo.png",
         workspace_root / "logo.png",
+        script_dir / "assets" / "logo.png",
     ]
     return next((p for p in logo_candidates if p.exists()), None)
+
+
+def read_logo_base64(workspace_root: Path) -> Optional[str]:
+    """Read logo bytes and return base64 string for inlined HTML rendering."""
+    logo_path = find_logo_path(workspace_root)
+    if not logo_path:
+        return None
+    try:
+        return base64.b64encode(logo_path.read_bytes()).decode("utf-8")
+    except OSError:
+        return None
 
 
 def compute_metrics_frame(df: pd.DataFrame) -> tuple[pd.DataFrame, dict]:
@@ -343,7 +357,7 @@ def main() -> None:
               background: linear-gradient(180deg, #111a2a, #151c27);
               border: 1px solid var(--border-soft);
               border-radius: 12px;
-              padding: 2.2rem 1rem 1.8rem 1rem;
+              padding: 0.8rem 1rem 0.85rem 1rem;
               margin-bottom: 1rem;
               box-shadow: 0 4px 18px rgba(3, 7, 18, 0.24);
             }
@@ -354,28 +368,24 @@ def main() -> None:
               gap: 0.75rem;
               flex-wrap: wrap;
             }
-            .logo-wrap {text-align: center; width: 100%;}
-            .logo-wrap img {max-height: 92px; object-fit: contain; margin: 0 auto 0.2rem auto;}
-            .brand-title {
-              font-size: 4.8rem;
-              font-weight: 800;
-              letter-spacing: -0.06em;
-              color: #eef2f8;
-              line-height: 0.92;
-              text-align: center;
-	      margin-bottom: 0.55rem;
+            .hero-logo-wrap {text-align: center; width: 100%; margin-bottom: 0.18rem;}
+            .hero-logo {
+              display: block;
+              width: min(760px, 92%);
+              max-height: 170px;
+              object-fit: contain;
+              margin: 0 auto;
+              filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.45));
             }
-            .brand-title .accent-blue {color: var(--accent);}
-            .brand-title .accent-orange {color: var(--accent-2);}
             .brand-subtitle {
-              font-size: 1.35rem;
+              font-size: 0.78rem;
               color: var(--muted);
               margin-top: 0.2rem;
               letter-spacing: .02em;
               text-align: center;
             }
             .brand-meta {
-              font-size: 1rem;
+              font-size: 0.74rem;
               color: var(--muted-2);
               margin-top: 0.18rem;
               text-align: center;
@@ -490,14 +500,18 @@ def main() -> None:
 
     workspace_root = resolve_workspace()
     csv_path = workspace_root / "logs" / "applications_log.csv"
-    logo_path = find_logo_path(workspace_root)
+    logo_base64 = read_logo_base64(workspace_root)
+    if logo_base64:
+        logo_html = f"<div class='hero-logo-wrap'><img class='hero-logo' src='data:image/png;base64,{logo_base64}' alt='ApplyChain logo' /></div>"
+    else:
+        logo_html = "<div class='brand-subtitle' style='margin-top:0.1rem;'>ApplyChain</div>"
 
     st.markdown(
         f"""
         <div class="app-header">
           <div class="app-header-row">
             <div style="width:100%">
-              <div class="brand-title"><span class="accent-blue">Apply</span><span class="accent-orange">Chain</span></div>
+              {logo_html}
               <div class="brand-subtitle">AI-Assisted Recruiting Workflow System</div>
               <div class="brand-meta">Created by ApplyChain User · Local-First Job Application Operations</div>
             </div>            
@@ -512,11 +526,6 @@ def main() -> None:
         """,
         unsafe_allow_html=True,
     )
-    if logo_path:
-        c_logo = st.columns([1, 2, 1])[1]
-        c_logo.image(str(logo_path), width=320)
-    else:
-        st.caption("Tip: place your logo at `assets/applychain_logo.png` (or `logo.png`) to show it front and center.")
 
     df = load_applications(str(csv_path))
     if df.attrs.get("parse_warning"):
