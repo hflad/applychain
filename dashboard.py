@@ -56,7 +56,7 @@ def load_applications(csv_path: str) -> pd.DataFrame:
             ]
         )
 
-    df = pd.read_csv(path)
+    df = pd.read_csv(path, on_bad_lines='skip') # change this later
     for col in ["date", "company", "role", "status", "match_score", "notes", "jd_url", "resume_file"]:
         if col not in df.columns:
             df[col] = pd.NA
