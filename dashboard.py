@@ -343,7 +343,7 @@ def main() -> None:
               background: linear-gradient(180deg, #111a2a, #151c27);
               border: 1px solid var(--border-soft);
               border-radius: 12px;
-              padding: 0.8rem 1rem 0.85rem 1rem;
+              padding: 2.2rem 1rem 1.8rem 1rem;
               margin-bottom: 1rem;
               box-shadow: 0 4px 18px rgba(3, 7, 18, 0.24);
             }
@@ -357,24 +357,25 @@ def main() -> None:
             .logo-wrap {text-align: center; width: 100%;}
             .logo-wrap img {max-height: 92px; object-fit: contain; margin: 0 auto 0.2rem auto;}
             .brand-title {
-              font-size: 1.35rem;
-              font-weight: 700;
-              letter-spacing: -0.02em;
+              font-size: 4.8rem;
+              font-weight: 800;
+              letter-spacing: -0.06em;
               color: #eef2f8;
-              line-height: 1.1;
+              line-height: 0.92;
               text-align: center;
+	      margin-bottom: 0.55rem;
             }
             .brand-title .accent-blue {color: var(--accent);}
             .brand-title .accent-orange {color: var(--accent-2);}
             .brand-subtitle {
-              font-size: 0.78rem;
+              font-size: 1.35rem;
               color: var(--muted);
               margin-top: 0.2rem;
               letter-spacing: .02em;
               text-align: center;
             }
             .brand-meta {
-              font-size: 0.74rem;
+              font-size: 1rem;
               color: var(--muted-2);
               margin-top: 0.18rem;
               text-align: center;
@@ -513,7 +514,7 @@ def main() -> None:
     )
     if logo_path:
         c_logo = st.columns([1, 2, 1])[1]
-        c_logo.image(str(logo_path), width=560)
+        c_logo.image(str(logo_path), width=320)
     else:
         st.caption("Tip: place your logo at `assets/applychain_logo.png` (or `logo.png`) to show it front and center.")
 
