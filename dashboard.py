@@ -481,6 +481,7 @@ def main() -> None:
     logo_candidates = [
         workspace_root / "assets" / "applychain_logo.png",
         workspace_root / "assets" / "applychain-logo.png",
+        workspace_root / "assets" / "logo.png",
         workspace_root / "applychain_logo.png",
         workspace_root / "logo.png",
     ]
