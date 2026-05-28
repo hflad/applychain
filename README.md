@@ -149,14 +149,20 @@ See [`docs/browser_automation_guide.md`](./docs/browser_automation_guide.md) for
 
 ---
 
-## Security
+## Security & Credentials
 
-- Credentials live in `.env` only — never in prompts, logs, documents, or markdown
-- A pre-commit hook scans staged files for email addresses, phone numbers, and `.env` files before any commit lands
-- `profile_knowledge_base/` should be gitignored once you fill it in (see instructions in that folder)
-- The system must pause and ask you before entering or submitting any sensitive data
+ApplyChain reads credentials from `.env` on your local machine — the agent uses them to log into and create accounts on ATS platforms (Workday, iCIMS, Taleo, etc.) without you having to type anything into chat.
 
-See [SECURITY.md](./SECURITY.md) for the full security model.
+**The rule:** credentials live in `.env` on disk. They are never typed into a chat message, never sent in a prompt, and never appear in any LLM context window. Local file read ≠ secret in the cloud.
+
+The agent supports three login paths:
+- **`.env` credentials** — email + password read from your local file at runtime
+- **SSO (Google / LinkedIn)** — the agent clicks the button; works well when you're already signed in for the day
+- **Chrome Password Manager** — if Chrome autofills a saved password, the agent uses it
+
+A pre-commit hook scans staged files for email addresses, phone numbers, and `.env` files before any commit lands. `profile_knowledge_base/` should be gitignored once filled in.
+
+See [SECURITY.md](./SECURITY.md) for the full model including password strategies, SSO behavior, and 2FA handling.
 
 ---
 
