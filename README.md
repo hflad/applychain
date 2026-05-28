@@ -182,6 +182,12 @@ Pull requests welcome — especially for new ATS adapters, platform-specific set
 
 ---
 
+## Credits
+
+See [CREDITS.md](./CREDITS.md) for inspirations, prior art, and acknowledgements.
+
+---
+
 ## License
 
 MIT — see [LICENSE](./LICENSE).
