@@ -31,12 +31,12 @@ def parse_workspace_arg() -> Optional[Path]:
 
 
 def resolve_workspace() -> Path:
-    script_dir = Path(__file__).resolve().parent
     override = parse_workspace_arg()
+
     if override:
         return override
-    return script_dir.parent
 
+    return Path(__file__).resolve().parent
 
 @st.cache_data(ttl=2)
 def load_applications(csv_path: str) -> pd.DataFrame:
