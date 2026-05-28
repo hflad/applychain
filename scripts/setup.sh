@@ -40,11 +40,22 @@ else
   echo "applications_log.csv already exists"
 fi
 
+# Install pre-commit PII guard
+echo "Installing pre-commit PII guard..."
+if [ -d ".git" ]; then
+  cp hooks/pre-commit .git/hooks/pre-commit
+  chmod +x .git/hooks/pre-commit
+  echo "Pre-commit hook installed — will block accidental PII commits"
+else
+  echo "WARNING: No .git directory found. Run 'git init' first, then re-run setup.sh"
+fi
+
 echo ""
 echo "=== Setup complete ==="
 echo ""
 echo "Next steps:"
 echo "  1. Fill in your credentials in .env"
 echo "  2. Fill in profile_knowledge_base/ templates with your information"
-echo "  3. Install the Claude for Chrome extension"
-echo "  4. Open Claude Desktop in Cowork mode and start your first application"
+echo "  3. Once filled in, uncomment 'profile_knowledge_base/' in .gitignore"
+echo "  4. Install the Claude for Chrome extension"
+echo "  5. Open Claude Desktop in Cowork mode and start your first application"

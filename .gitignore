@@ -1,17 +1,28 @@
-# Environment / credentials
+# ── Credentials (NEVER commit these) ──────────────────────────────
 .env
 *.env
 env.rtf
 *.rtf
 secrets/
+*.pem
+*.key
 
-# Output folders (personal application data — do not commit)
+# ── Personal operational data (NEVER commit these) ────────────────
 resumes/
 cover_letters/
 job_descriptions/
 applications/
 logs/
 exports/
+system/          # operational runtime folder (truth DB, defaults, helpers)
+*.csv            # application logs
+
+# ── Profile Knowledge Base ─────────────────────────────────────────
+# The templates above ship with the repo.
+# Once you fill them in with your real information, uncomment the
+# line below so your personal data is never accidentally committed:
+#
+# profile_knowledge_base/
 
 # macOS
 .DS_Store
