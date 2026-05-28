@@ -1,7 +1,24 @@
-# ApplyChain
+<p align="center">
+  <img src="assets/logo.png" alt="ApplyChain Logo" width="700"/>
+</p>
 
-> A local-first, human-supervised AI job application framework.  
-> Bring your own agent. Runs on your machine. Never submits without your approval.
+<p align="center">
+  Scale your job search without surrendering control.
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/status-active-success">
+  <img src="https://img.shields.io/badge/python-3.9+-blue">
+  <img src="https://img.shields.io/badge/streamlit-dashboard-red">
+  <img src="https://img.shields.io/badge/license-MIT-lightgrey">
+</p>
+
+<p align="center">
+  <em>
+    A local-first AI recruiting workflow built for human oversight.<br>
+    Bring your own agent. Runs on your machine. Never submits without your approval.
+  </em>
+</p>
 
 ---
 
@@ -42,9 +59,9 @@ ApplyChain is designed to work with any capable AI agent that can read files, ru
 | Prompt execution | Running gap analysis, resume tailoring, cover letter generation |
 | Browser automation | Filling ATS forms and navigating job portals |
 
-### Reference Implementation (fully tested)
+### Reference Implementation (what's been tested so far)
 
-The reference implementation uses **Claude** and has been tested end-to-end:
+The reference implementation uses **Claude (Sonnet 4.6)** and has been tested end-to-end:
 
 - **[Claude for Desktop](https://claude.ai/download)** (Pro or Max plan) with Cowork mode — provides file access and prompt execution
 - **[Claude for Chrome extension](https://claude.ai/download)** — provides browser automation
@@ -184,7 +201,7 @@ Pull requests welcome — especially for new ATS adapters, platform-specific set
 
 ## Credits
 
-See [CREDITS.md](./CREDITS.md) for inspirations, prior art, and acknowledgements.
+See [CREDITS.md](./CREDITS.md) for inspirations, prior artifacts, and acknowledgements.
 
 ---
 
