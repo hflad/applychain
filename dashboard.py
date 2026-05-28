@@ -368,14 +368,19 @@ def main() -> None:
               gap: 0.75rem;
               flex-wrap: wrap;
             }
-            .hero-logo-wrap {text-align: center; width: 100%; margin-bottom: 0.18rem;}
+            .hero-logo-wrap {
+		text-align: center; 
+		width: 100%; 
+		margin-bottom: -0.5rem; 
+		margin-top: -0.5rem;
+		}
             .hero-logo {
               display: block;
-              width: min(760px, 92%);
-              max-height: 170px;
+              width: min(1200px, 98%);
+              max-height: 320px;
               object-fit: contain;
               margin: 0 auto;
-              filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.45));
+              filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.5));
             }
             .brand-subtitle {
               font-size: 0.78rem;
