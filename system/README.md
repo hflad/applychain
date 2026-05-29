@@ -11,10 +11,12 @@ and full trace capture.
 ```
 Claude/Cowork (reasoning + orchestration)
          ↓
+  VerificationFramework  (verification.py)  ← PUBLIC API — Claude calls this
+         ↓
   HumanSimulationEngine  (engine.py)
          ↓
   InteractionHelpers     (helpers.py)       ← human-event simulation
-  FrontendValidator      (validation.py)    ← visible state verification
+  FrontendValidator      (validation.py)    ← INTERNAL — low-level primitives used by engine
   InteractionConfidence  (confidence.py)    ← confidence scoring
   ObservabilityManager   (observability.py) ← screenshots + traces
          ↓
@@ -24,6 +26,17 @@ Claude/Cowork (reasoning + orchestration)
          ↓
   ATS Website
 ```
+
+### validation.py vs verification.py
+
+Two files handle state checking — they serve different layers:
+
+| File | Class | Role | Who uses it |
+|------|-------|------|-------------|
+| `validation.py` | `FrontendValidator` | Internal low-level primitives (verify_input_value, detect_rerender, wait_for_hydration). Returns `(bool, str)` tuples. | `engine.py` and `helpers.py` internally |
+| `verification.py` | `VerificationFramework` | Public API for Claude. Multi-signal checks with structured `{success, confidence, observations, details}` results. | Claude via CLI (`verify-input`, `verify-radio`, etc.) |
+
+Do not call `FrontendValidator` directly from Claude — use `VerificationFramework` via the CLI.
 
 ---
 

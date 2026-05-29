@@ -7,6 +7,7 @@
 </p>
 
 <p align="center">
+  <img src="https://img.shields.io/badge/version-v0.2.0-blue">
   <img src="https://img.shields.io/badge/status-active-success">
   <img src="https://img.shields.io/badge/python-3.9+-blue">
   <img src="https://img.shields.io/badge/streamlit-dashboard-red">
@@ -196,6 +197,26 @@ These gates are **mandatory** — the AI must stop and wait at each one regardle
 | Post-submission log | After any submission |
 
 See [`MODEL_INSTRUCTIONS.md`](./MODEL_INSTRUCTIONS.md) and [`HUMAN_CHECKPOINTS.md`](./HUMAN_CHECKPOINTS.md) for the full checkpoint definitions and required behavior for each gate.
+
+---
+
+## Changelog
+
+### v0.2.0 — Interaction Reliability + Verification Framework
+- **playwright_engine** — Full Human-Simulation Interaction Engine (`system/`): human-first scroll→hover→click→type→verify primitives, 7-signal weighted confidence scoring, React rerender detection, CDP connection to existing Chrome session
+- **VerificationFramework** (`system/verification.py`) — 6 platform-agnostic verification primitives: `verify_input_value`, `verify_radio_selected`, `verify_dropdown_value`, `verify_text_present`, `verify_submit_enabled`, `capture_verification_snapshot`
+- **Verification CLI** — `verify-input`, `verify-radio`, `verify-dropdown`, `verify-text`, `verify-submit`, `snapshot` subcommands added to `system/cli.py`
+- **ATS adapters** — Taleo (tested), Avature (observed), Workday (documented), Greenhouse (documented)
+- **GOVERNANCE.md** — Agent governance rule: Claude is orchestrator, playwright_engine is execution-only helper
+- **Dedicated debug browser guide** — `docs/browser_automation_guide.md` updated with dual-browser setup rationale and `--user-data-dir` isolation
+- **Repo cleanup** — Scratch test files removed; ATS platform notes moved to `docs/ats_platforms/`
+
+### v0.1.0 — Foundation
+- Full project scaffold, truth database, profile knowledge base templates
+- Resume pipeline, cover letter generator, 4-evaluator scoring
+- applications_log.csv tracker and Streamlit dashboard
+- browser_helpers/interaction_helpers.js — Chrome extension JS fallback helpers
+- Pre-commit PII guard hook
 
 ---
 
