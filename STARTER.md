@@ -206,7 +206,71 @@ The system should pause:
 Humans remain final decision-makers.
 
 ────────────────────────
-SECTION 7 — WORKSPACE VALIDATION
+SECTION 7 — BROWSER AUTOMATION SETUP
+────────────────────────
+
+ApplyChain uses a two-layer browser automation architecture.
+Both layers must be set up before automation workflows are usable.
+
+LAYER 1 — Claude for Chrome Extension (primary)
+
+This is Claude's main way to observe and interact with web pages.
+
+Requirements:
+* Chrome browser installed
+* Claude for Chrome extension installed from the Chrome Web Store
+* Extension connected — visible in toolbar, status shows "Connected"
+* User signed into Claude within the extension
+
+This layer handles: reading pages, navigating, filling standard form fields,
+clicking buttons, uploading files.
+
+LAYER 2 — playwright_engine (fallback for complex interactions)
+
+This is a Python CLI Claude calls via bash for interactions the Chrome
+extension cannot reliably handle (React state management, Select2 autocompletes,
+rerender detection, multi-signal verification).
+
+Requirements:
+
+1. Python 3.9+ installed (verify: python3 --version)
+
+2. playwright_engine installed — run once from workspace root:
+   bash system/playwright_engine/setup.sh
+
+3. Test the installation:
+   python3 -m system.playwright_engine.cli diagnose --tab-url "https://example.com"
+   Expected: JSON output with url and title fields.
+
+4. A dedicated debug Chrome browser for automation work (recommended):
+   /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome \
+     --remote-debugging-port=9222 \
+     --user-data-dir="$HOME/.chrome-applychain" &
+
+   Add as a shell alias for convenience:
+   alias chrome-debug="/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome \
+     --remote-debugging-port=9222 \
+     --user-data-dir=$HOME/.chrome-applychain"
+
+   Why a separate browser: keeps automation work isolated from daily browsing,
+   maintains persistent logins (LinkedIn, job portals, Claude extension) across
+   sessions, and ensures port 9222 is always available when needed.
+   See docs/browser_automation_guide.md for full rationale.
+
+HOW CLAUDE CALLS playwright_engine
+
+Claude uses a bash tool built into Cowork — NOT your system Terminal.
+You do not run these commands yourself. Claude calls them internally,
+reads the JSON output, and decides what to do next.
+
+For this to work, Claude requires:
+* A workspace folder selected in Cowork (gives Claude bash access)
+* playwright_engine installed (setup.sh run at least once)
+* Chrome running with --remote-debugging-port=9222 when Playwright helpers are needed
+* The target tab already open in that Chrome instance
+
+────────────────────────
+SECTION 8 — WORKSPACE VALIDATION
 ────────────────────────
 
 Validate:
@@ -217,7 +281,8 @@ Validate:
 * .env protections
 * .gitignore protections
 * CSV/application log integrity
-* browser helper availability
+* playwright_engine installation (run diagnose command)
+* Chrome extension connected
 * Streamlit/dashboard launch capability
 
 Confirm:
@@ -227,7 +292,7 @@ Confirm:
 * no placeholder identity data remains
 
 ────────────────────────
-SECTION 8 — OPTIONAL DASHBOARD PERSONALIZATION
+SECTION 9 — OPTIONAL DASHBOARD PERSONALIZATION
 ────────────────────────
 
 Personalize the dashboard branding for the current user.
@@ -248,7 +313,7 @@ Keep styling:
 * understated
 
 ────────────────────────
-SECTION 9 — FINAL OUTPUT
+SECTION 10 — FINAL OUTPUT
 ────────────────────────
 
 After onboarding:

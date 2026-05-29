@@ -7,8 +7,55 @@ A practical guide to using Claude for Chrome to fill and submit job applications
 ## Prerequisites
 
 1. Claude Desktop installed with Cowork mode
-2. Claude for Chrome extension installed and connected
-3. The extension is visible in the Chrome toolbar and shows "Connected"
+2. Claude for Chrome extension installed and connected — extension visible in toolbar, showing "Connected"
+3. **A workspace folder selected in Cowork** — Claude needs a mounted folder to run bash commands
+4. **playwright_engine installed** — `bash system/playwright_engine/setup.sh` run once from your workspace root
+
+---
+
+## How Claude Calls playwright_engine
+
+Claude uses a **bash tool** built into Cowork to run CLI commands like:
+
+```bash
+python3 -m system.playwright_engine.cli verify-input \
+    --tab-url "https://..." \
+    --label "First Name" --expected "Henry"
+```
+
+This is not something you run yourself — Claude calls it internally, reads the JSON output, and decides what to do next based on `success`, `confidence`, and `observations`.
+
+**What Claude needs to make this work:**
+
+| Requirement | Why |
+|-------------|-----|
+| Cowork workspace folder selected | Gives Claude access to the bash tool and the filesystem |
+| `playwright_engine` installed (`setup.sh`) | Python package must exist before `python3 -m system.playwright_engine.cli` works |
+| Chrome running with `--remote-debugging-port=9222` | Playwright connects to your existing Chrome session via CDP on this port |
+| Tab already open at the target URL | The `--tab-url` flag matches against open tabs — Claude cannot open new ones |
+
+**What Claude does NOT need:**
+
+- You do not run any commands yourself during a workflow — Claude handles all CLI calls
+- You do not need to keep a terminal window open — Cowork's bash tool runs in the background
+- You do not need to grant Claude access to Terminal.app — the bash tool is separate from your system Terminal
+
+**The full loop looks like this:**
+
+```
+1. You tell Claude: "Fill out the education section on this form"
+2. Claude uses Chrome extension to read the page and identify fields
+3. Claude calls: python3 -m system.playwright_engine.cli fill-field --label "School" --value "..."
+4. Claude calls: python3 -m system.playwright_engine.cli verify-input --label "School" --expected "..."
+5. Claude reads the JSON result — checks success, confidence, observations
+6. Claude decides: proceed / retry / escalate to you
+```
+
+If Claude does not have a workspace folder selected, or `playwright_engine` is not installed, the CLI commands will fail silently. Always verify setup first with:
+
+```bash
+python3 -m system.playwright_engine.cli diagnose --tab-url "https://example.com"
+```
 
 ---
 
