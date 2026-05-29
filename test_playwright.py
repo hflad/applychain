@@ -5,9 +5,6 @@ with sync_playwright() as p:
         "http://localhost:9222"
     )
 
-    print("Connected!")
+    page = browser.contexts[0].pages[-1]
 
-    for context in browser.contexts:
-        for page in context.pages:
-            print(page.title())
-            print(page.url)
+    print(page.title())
