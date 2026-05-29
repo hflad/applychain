@@ -16,12 +16,15 @@ from .engine import HumanSimulationEngine
 from .confidence import InteractionConfidence, ConfidenceLevel
 from .helpers import InteractionHelpers
 from .validation import FrontendValidator
+from .verification import VerificationFramework, VerificationResult
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 __all__ = [
     "HumanSimulationEngine",
     "InteractionConfidence",
     "ConfidenceLevel",
     "InteractionHelpers",
     "FrontendValidator",
+    "VerificationFramework",
+    "VerificationResult",
 ]

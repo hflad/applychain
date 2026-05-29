@@ -150,6 +150,95 @@ Adapters auto-detect from URL. To add a new platform:
 
 ---
 
+## Verification Framework
+
+`verification.py` provides platform-agnostic primitives to confirm that interactions produced real visible state changes. It reports facts — it never decides what to do next.
+
+```
+Claude decides what to verify
+    ↓
+Playwright executes the interaction
+    ↓
+VerificationFramework reports what it observes
+    ↓
+Claude evaluates the result and decides next action
+```
+
+### Usage
+
+```python
+from system.playwright_engine.verification import VerificationFramework
+
+vf = VerificationFramework(page)
+
+# After typing into a field
+result = vf.verify_input_value(
+    locator=page.get_by_label("First Name"),
+    expected_value="Henry",
+    field_label="First Name",
+)
+# {"success": true, "confidence": 0.95, "observations": [...], "details": {...}}
+
+# After selecting a radio button
+result = vf.verify_radio_selected(
+    locator=page.locator("#radio-yes"),
+    label_text="Yes",
+)
+
+# After choosing a dropdown option
+result = vf.verify_dropdown_value(
+    locator=page.locator("#degree-select"),
+    expected_value="Master's Degree",
+)
+
+# Before clicking submit — check if it's enabled
+result = vf.verify_submit_enabled(
+    also_check_text=["Next", "Continue"],
+)
+
+# Confirm text appeared after an action
+result = vf.verify_text_present("Application submitted successfully")
+
+# Save a full snapshot (screenshot + DOM + diagnostics)
+snapshot = vf.capture_verification_snapshot(label="after-education-section")
+# Files saved to: logs/verification_snapshots/after-education-section_{ts}/
+```
+
+### Result Shape
+
+Every method returns the same structure:
+
+```json
+{
+  "success": true,
+  "confidence": 0.95,
+  "observations": [
+    "playwright input_value='Henry' (match)",
+    "DOM .value='Henry'",
+    "value stable after 500ms hydration wait",
+    "field (First Name) contains expected value"
+  ],
+  "details": {
+    "expected_value": "Henry",
+    "value_playwright": "Henry",
+    "value_dom": "Henry",
+    "value_post_hydration": "Henry",
+    "hydration_reset": false
+  }
+}
+```
+
+`confidence` reflects evidence quality, not a recommendation to proceed. A `0.55` confidence on a radio result means signals were contradictory — Claude should inspect `details.signals` before deciding.
+
+### Snapshot Contents
+
+`capture_verification_snapshot()` saves to `logs/verification_snapshots/{label}_{ts}/`:
+- `screenshot.png` — viewport screenshot at that moment
+- `dom_excerpt.html` — inner HTML of the target selector (default: body, max 50KB)
+- `summary.json` — URL, title, timestamp, form/input counts, visible errors
+
+---
+
 ## Debugging
 
 Traces land in: `applychain-workspace/logs/playwright_traces/`
