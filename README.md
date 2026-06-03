@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-v0.2.0-blue">
+  <img src="https://img.shields.io/badge/version-v1.0.0-blue">
   <img src="https://img.shields.io/badge/status-active-success">
   <img src="https://img.shields.io/badge/python-3.9+-blue">
   <img src="https://img.shields.io/badge/streamlit-dashboard-red">
@@ -85,7 +85,28 @@ The main caveat: the `docs/browser_automation_guide.md` and ATS adapter notes re
 
 ---
 
+## Prerequisites
+
+Before you start, make sure you have:
+
+| Requirement | Details |
+|---|---|
+| **Claude subscription** | Pro or Max plan — required for Cowork mode file access |
+| **Claude Desktop** | [Download](https://claude.ai/download) — enables Cowork mode |
+| **Claude for Chrome extension** | [Install from Chrome Web Store](https://claude.ai/download) — required for browser automation |
+| **Chrome browser** | The automation layer targets Chrome specifically |
+| **Python 3.9+** | Required for `setup.sh` and the playwright_engine fallback |
+| **Git** | For cloning and the pre-commit PII guard |
+
+---
+
 ## Quick Start
+
+### 0. Initialize Your Workspace with Claude
+
+After cloning, **paste [`STARTER.md`](./STARTER.md) into Claude** (in Cowork mode or Claude Desktop). This is the fastest path to a working workspace — Claude will guide you through profile setup, dependency installation, and your first workflow automatically.
+
+> If you prefer to set up manually, continue with steps 1–4 below.
 
 ### 1. Install Dependencies
 
@@ -130,7 +151,33 @@ profile_knowledge_base/
 
 ### 4. Run Your First Application
 
-Point your agent at a job description. Walk it through the pipeline using the prompts in `prompts/` as starting points: gap analysis → resume tailoring → your review → cover letter → your review → form fill → your approval → submit.
+See [`docs/first_application.md`](./docs/first_application.md) for a step-by-step walkthrough of a complete first application, from pasting a job description to submitting the form.
+
+The short version:
+1. Save a job description to `job_descriptions/` (paste the text or URL)
+2. Ask Claude to run a gap analysis using `prompts/gap_analysis.md`
+3. Review the gap analysis output, then approve resume generation
+4. Review and approve the tailored resume → Claude exports it to `resumes/`
+5. Review and approve the cover letter → Claude exports it to `cover_letters/`
+6. Ask Claude to open the ATS application form and begin form fill
+7. Claude pauses before Submit — you review and give final approval
+
+### 5. Launch the Dashboard (Optional)
+
+The dashboard gives you a visual overview of your application pipeline.
+
+```bash
+pip install streamlit pandas
+streamlit run dashboard.py -- --workspace /path/to/your/workspace
+```
+
+Or, if your workspace is the current directory:
+
+```bash
+streamlit run dashboard.py
+```
+
+Open `http://localhost:8501` in your browser.
 
 ---
 
@@ -201,6 +248,8 @@ See [`MODEL_INSTRUCTIONS.md`](./MODEL_INSTRUCTIONS.md) and [`HUMAN_CHECKPOINTS.m
 ---
 
 ## Changelog
+
+See [CHANGELOG.md](./CHANGELOG.md) for the full version history.
 
 ### v0.2.0 — Interaction Reliability + Verification Framework
 - **playwright_engine** — Full Human-Simulation Interaction Engine (`system/`): human-first scroll→hover→click→type→verify primitives, 7-signal weighted confidence scoring, React rerender detection, CDP connection to existing Chrome session

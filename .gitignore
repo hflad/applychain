@@ -14,7 +14,6 @@ job_descriptions/
 applications/
 logs/
 exports/
-system/          # operational runtime folder (truth DB, defaults, helpers)
 *.csv            # application logs
 
 # ── Profile Knowledge Base ─────────────────────────────────────────

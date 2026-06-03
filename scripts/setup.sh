@@ -17,8 +17,8 @@ echo "Python $PYTHON_VERSION detected"
 
 # Install Python dependencies
 echo "Installing Python dependencies..."
-pip3 install python-docx openpyxl --break-system-packages 2>/dev/null || \
-  pip3 install python-docx openpyxl
+pip3 install python-docx openpyxl streamlit pandas --break-system-packages 2>/dev/null || \
+  pip3 install python-docx openpyxl streamlit pandas
 
 # Check for .env
 if [ ! -f ".env" ]; then
@@ -58,4 +58,5 @@ echo "  1. Fill in your credentials in .env"
 echo "  2. Fill in profile_knowledge_base/ templates with your information"
 echo "  3. Once filled in, uncomment 'profile_knowledge_base/' in .gitignore"
 echo "  4. Install the Claude for Chrome extension"
-echo "  5. Open Claude Desktop in Cowork mode and start your first application"
+echo "  5. Open Claude Desktop in Cowork mode and paste STARTER.md to begin"
+echo "  6. (Optional) Launch the dashboard: streamlit run dashboard.py"

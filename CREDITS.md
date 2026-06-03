@@ -39,9 +39,7 @@ While AI-assisted tooling accelerated development significantly, all generated c
 
 **To my past professional colleagues** - For giving me the opportunity and platform to grow and develop my skills, both hard and soft, in a real-world setting. This project would have been ill-informed without some of the knowledge and best practices I gained from these engagements and I truly appreciate everyone I crossed paths with and got to learn from.
 
-**To any recruiters looking for a data scientist, data engineer, AI specialist, or any kind of tech consultant** - thanks for checking this out! I would love to chat about opportunities to further my professional development with your organization. My LinkedIn is in my GitHub bio and I would love to hear from you.
-
-I built this tool a few weeks post-grad and knowing I needed to step up my game to find the right opportunity in this market. I hope this tool can help others do the same, at scale, and at speed. **Let's make it happen.**
+I built this tool a few weeks post-grad, knowing I needed to step up my game to find the right opportunity in this market. I hope it helps others do the same — at scale, with integrity, and without surrendering control to automation.
 
 ---
 
