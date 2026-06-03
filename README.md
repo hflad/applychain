@@ -40,8 +40,8 @@ Most "AI job application" tools optimize for volume: spray résumés, auto-submi
 
 ## What This Does
 
-1. **Profile Knowledge Base** — You fill in structured markdown templates with your real experience, projects, skills, and preferences. This is the single source of truth for all generated content.
-2. **Job Intake** — Paste a job description URL or text. The system scores it against your profile and saves it.
+1. **Profile Knowledge Base** — The agent reads your existing resume and any other documents you provide, extracts your verified experience, skills, and metrics, and populates the structured knowledge base for you. You review and approve. This becomes the single source of truth for all generated content.
+2. **Job Intake** — The agent can browse LinkedIn, job boards, or any careers page to find and pull job descriptions directly. Or paste a URL or text manually. Either way, it scores the role against your profile and saves it.
 3. **Gap Analysis** — A prompt compares the JD requirements against your profile, surfacing alignment and gaps honestly.
 4. **Resume Tailoring** — Your agent generates a tailored resume variant using only approved profile facts. Missing metrics are marked `[FILL IN]`, not invented.
 5. **Cover Letter Generation** — Concise (≤250 words), role-specific, avoids generic AI phrasing.
