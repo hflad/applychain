@@ -34,6 +34,7 @@ Most "AI job application" tools optimize for volume: spray résumés, auto-submi
 - **Local-first** — Your résumé facts, credentials, and application history stay on your machine. No cloud sync, no third-party data sharing beyond LLM API calls.
 - **Quality over quantity** — One well-targeted application beats ten generic ones. The system is designed to help you find strong-fit roles and present yourself accurately and compellingly.
 - **Transparent** — Every decision, gap, placeholder, and assumption is surfaced to you. Nothing is hidden or auto-resolved.
+- **Progressively autonomous** — ApplyChain starts with you in control of every step. That's intentional — you should understand what the system is doing and trust its outputs before delegating anything. But the architecture is designed to support increasingly autonomous workflows as that trust develops. Batch job scoring, scheduled pipeline runs, and reduced checkpoint frequency are all on the roadmap. The goal isn't to keep you in the loop forever — it's to make sure you're *choosing* how much autonomy to grant, rather than having it assumed.
 
 ---
 
