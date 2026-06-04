@@ -31,7 +31,7 @@ While AI-assisted tooling accelerated development significantly, all generated c
 
 ## Personal Acknowledgements
 
-**To my Dad** — For gifting me a Raspberry Pi when I was 11, for constantly reminding me that “learning to code is the future, son,” and for supporting me throughout every step of my academic and professional journey. That early encouragement sparked a passion for technology that ultimately led me to pursue a field of study that opened the door to completing both my bachelor’s and master’s degrees in just four years.
+**To my Dad** — For gifting me a Raspberry Pi when I was 11, for constantly reminding me that “learning to code is the future, son,” and for supporting me throughout every step of my academic and professional journey.
 
 **To Suresh K** — My friend, mentor, and the person who showed me what it actually means to think like a technologist. The way I approach problems in this space is shaped by your influence more than you probably know.
 
