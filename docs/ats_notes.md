@@ -155,3 +155,86 @@ Only escalate tiers when lower tiers fail visibly. Do not default to complex hel
 | React wipe | Value entered then cleared on rerender | Re-enter after delay; verify state |
 | Hydration lag | Field not interactive yet | Add `wait` before interaction |
 | Scroll miss | Coordinate click landed on wrong element | Scroll to element first, then use ref |
+
+---
+
+## Oracle HCM (Oracle HCM portals)
+**Last Updated:** 2026-06-03
+**Reliability Rating:** 4/5 — reliable with careful scrolling; some field misses
+**Platform Type:** Oracle HCM Cloud Candidate Experience (JavaScript-heavy SPA)
+
+### Known Characteristics
+- 4-page application flow: Personal Info → Application Questions → Experience → More About You
+- File upload: hidden `input[type=file]` elements behind drag-drop UI — use `file_upload` tool with `ref` IDs (`attachment-upload-[N]` for resume, `attachment-upload-[N]` for cover letter)
+- ZIP code dropdown auto-populates City, State, and County — always select from dropdown, not type directly
+- Language Skills: each language requires Language + Reading/Writing/Speaking proficiency + clicking "ADD LANGUAGE" button to save — ADD LANGUAGE must be clicked before moving on
+- "Welcome Back" dialog may appear on return visits — close it to avoid stale profile data being loaded
+- All application questions are on page 2 (not page 1 as read_page suggests)
+
+### Work Authorization Sub-Questions
+After selecting "Yes" to work authorization, sub-questions appear:
+- Visa sponsorship needed → **N/A**
+- Citizenship status → **US Citizen**
+
+### Missed Fields (corrected manually — add to checklist)
+- Race/ethnicity → [see application_defaults.md]
+- Hispanic or Latino → [see application_defaults.md]
+- Work authorization Yes + sub-questions (visa=N/A, citizenship=US Citizen)
+- Prior employment at company → [see application_defaults.md]
+- Affiliated firm disclosure → [see application_defaults.md]
+
+### Latest Employer Dropdown
+If employer not in dropdown — select **Other**. Rule: if employer not found in dropdown, always select "Other".
+
+### EEO Defaults (GS-specific)
+- Consent to self-identify → I consent
+- Gender → [see application_defaults.md]
+- Transgender → [see application_defaults.md]
+- Sexual orientation → [see application_defaults.md]
+- Pronouns → [see application_defaults.md]
+- Race → [see application_defaults.md]
+- Hispanic/Latino → [see application_defaults.md]
+
+### Interaction Notes
+- Scrolling while using coordinate-based clicks causes field misses — always scroll to element first using `scroll_to` with ref IDs, then click
+- Page structure visible in `read_page` shows all sections but they are split across pages 1-4
+- SUBMIT button is at bottom of page 4 — may require two clicks if first click doesn't register
+
+---
+
+## Oracle HCM (Oracle HCM employer — [company].fa.oraclecloud.com)
+**Last Updated:** 2026-06-04
+**Reliability Rating:** 2/5 — React-controlled fields block most automation; manual completion required for EEO and preferred locations
+**Platform Type:** Oracle HCM Cloud Candidate Experience (same platform as GS but different instance)
+
+### Flow
+- Email → verification code → 4-step wizard: Personal Info → (unknown) → (unknown) → Review & Submit
+- Email verification: enter email → check terms checkbox → click Next → receive OTP → enter code
+
+### Step 1 — Personal Info
+**Resume parser:** First file input (`input.apply-flow-profile-import-awli__file-upload`) parses resume and pre-fills name, email, phone, LinkedIn. Use `file_upload` with `ref` — found via `find` query "Import your profile from resume". Upload before filling any fields.
+
+**Address:**
+- Country field: type partial text → wait for gridcell dropdown → click option. Search "United States" to get the option. Country selection triggers address sub-fields to appear dynamically.
+- City field: type city name → dropdown shows `City, County, State` format → select correct county. e.g. "CityName, County, State"
+- Postal code: typing alone doesn't work — field opens a dropdown of zip codes. Type zip → select matching gridcell (e.g. "ZIPCODE, City, County, State"). County and State auto-fill from city selection.
+- React state issue: `form_input` and React event injection both fail to trigger the location API. Only real keystrokes via `computer type` trigger the dropdown.
+
+**Preferred Locations:**
+- Field only accepts internal Oracle HCM employer location codes, NOT city names or street addresses
+- Search by 5-digit location ID to get the right option (e.g. "54101" → "LOCID-Street Address" = Columbus OH)
+- Known location codes for this job (job-id-example):
+  - Location A: `LOCID` → "LOCID-Street Address"
+  - Location B: `LOCID` → "LOCID-Location Name"
+  - Location C: `LOCID` → "LOCID-Location Name"
+- JS click on gridcell works once dropdown is open
+- Field accepts up to 3 locations — add them sequentially
+
+**EEO / Demographic Fields:**
+- Disability: radio buttons — `ORA_PER_NO_US (No disability radio value)` = No disability. JS `.click()` works.
+- Race: checkboxes — find by label text, JS `.click()` works. Use your application_defaults.md value.
+- Gender, Military Status, Veteran Status: combobox inputs — did not reach these before manual takeover; likely same Oracle HCM pattern as GS instance
+- Hispanic/Latino: checkbox — use your application_defaults.md value
+
+### Sandbox / Playwright Limitation
+playwright_engine cannot run from Cowork sandbox — pip install blocked by network proxy, and sandbox localhost ≠ Mac localhost for CDP. MCP server solution planned (see ROADMAP.md Phase 8). Until then: EEO fields and complex dropdowns require manual completion or Claude Code.
